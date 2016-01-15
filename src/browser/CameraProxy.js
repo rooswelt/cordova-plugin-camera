@@ -69,7 +69,10 @@ function capture(success, errorCallback) {
         imageData = imageData.replace('data:image/png;base64,', '');
 
         // stop video stream, remove video and button
-        localMediaStream.stop();
+        // localMediaStream.stop() -- Deprecated https://developers.google.com/web/updates/2015/07/mediastream-deprecations
+        localMediaStream.getTracks().forEach(function (track){
+            track.stop();
+        });
         video.parentNode.removeChild(video);
         button.parentNode.removeChild(button);
         stopButton.parentNode.removeChild(stopButton);
@@ -77,8 +80,16 @@ function capture(success, errorCallback) {
         return success(imageData);
     };
 
+    function stopTrack(track) {
+        track.stop();
+};
+
     stopButton.onclick = function () {
-        localMediaStream.stop();
+      // stop video stream, remove video and button
+      // localMediaStream.stop() -- Deprecated https://developers.google.com/web/updates/2015/07/mediastream-deprecations
+      localMediaStream.getTracks().forEach(function (track){
+          track.stop();
+      });
         video.parentNode.removeChild(video);
         button.parentNode.removeChild(button);
         stopButton.parentNode.removeChild(stopButton);
