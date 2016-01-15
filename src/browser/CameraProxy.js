@@ -27,11 +27,11 @@ function takePicture(success, error, opts) {
         input.type = 'file';
         input.name = 'files[]';
 
-        input.onchange = function(inputEvent) {
+        input.onchange = function (inputEvent) {
             var canvas = document.createElement('canvas');
 
             var reader = new FileReader();
-            reader.onload = function(readerEvent) {
+            reader.onload = function (readerEvent) {
                 input.parentNode.removeChild(input);
 
                 var imageData = readerEvent.target.result;
@@ -51,16 +51,19 @@ function capture(success, errorCallback) {
 
     var video = document.createElement('video');
     var button = document.createElement('button');
+    var stopButton = document.createElement('button');
 
     video.width = 320;
     video.height = 240;
-    button.innerHTML = 'Capture!';
-
-    button.onclick = function() {
+    button.innerHTML = 'Capture';
+    stopButton.innerHTML = 'Cancel';
+    button.onclick = function () {
         // create a canvas and capture a frame from video stream
         var canvas = document.createElement('canvas');
+        canvas.width = 320;
+        canvas.height = 240;
         canvas.getContext('2d').drawImage(video, 0, 0, 320, 240);
-        
+
         // convert image stored in canvas to base64 encoded image
         var imageData = canvas.toDataURL('img/png');
         imageData = imageData.replace('data:image/png;base64,', '');
@@ -69,23 +72,39 @@ function capture(success, errorCallback) {
         localMediaStream.stop();
         video.parentNode.removeChild(video);
         button.parentNode.removeChild(button);
+        stopButton.parentNode.removeChild(stopButton);
 
         return success(imageData);
-    }
+    };
+
+    stopButton.onclick = function () {
+        localMediaStream.stop();
+        video.parentNode.removeChild(video);
+        button.parentNode.removeChild(button);
+        stopButton.parentNode.removeChild(stopButton);
+    };
 
     navigator.getUserMedia = navigator.getUserMedia ||
-                             navigator.webkitGetUserMedia ||
-                             navigator.mozGetUserMedia ||
-                             navigator.msGetUserMedia;
+            navigator.webkitGetUserMedia ||
+            navigator.mozGetUserMedia ||
+            navigator.msGetUserMedia;
 
-    var successCallback = function(stream) {
+    var successCallback = function (stream) {
         localMediaStream = stream;
         video.src = window.URL.createObjectURL(localMediaStream);
         video.play();
 
-        document.body.appendChild(video);
-        document.body.appendChild(button);
-    }
+        var videoContainer = document.getElementById('video-container');
+        if (videoContainer) {
+            videoContainer.appendChild(video);
+            videoContainer.appendChild(button);
+            videoContainer.appendChild(stopButton);
+        } else {
+            document.body.appendChild(video);
+            document.body.appendChild(button);
+            document.body.appendChild(stopButton);
+        }
+    };
 
     if (navigator.getUserMedia) {
         navigator.getUserMedia({video: true, audio: true}, successCallback, errorCallback);
@@ -96,7 +115,8 @@ function capture(success, errorCallback) {
 
 module.exports = {
     takePicture: takePicture,
-    cleanup: function(){}
+    cleanup: function () {
+    }
 };
 
-require("cordova/exec/proxy").add("Camera",module.exports);
+require("cordova/exec/proxy").add("Camera", module.exports);
